@@ -363,7 +363,6 @@ namespace intersector
 			rtcIntersect(scene.rtc_scene, ray);
 
 			// check if something was hit and set the pointers
-			if (1 == 1);
 			// if it hasn't hit anything
 			if (ray.geomID == RTC_INVALID_GEOMETRY_ID)
 			{
