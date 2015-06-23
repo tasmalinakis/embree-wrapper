@@ -13,7 +13,7 @@ namespace path_tracer
 		mesh.vertex_data.clear();
 	}
 
-	Triangle*& Mesh::addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2, const glm::vec3 color)
+	Triangle* Mesh::addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2, const glm::vec3 color)
 	{
 		
 		size_t length = mesh.vertex_data.size();
@@ -30,12 +30,12 @@ namespace path_tracer
 		return tr;
 	}
 
-	Triangle*& Mesh::addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2)
+	Triangle* Mesh::addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2)
 	{
 		return addTriangle(v0, v1, v2, glm::vec3(0));
 	}
 
-	Material*& Mesh::getMaterial(const std::string mat_name)
+	Material* Mesh::getMaterial(const std::string mat_name)
 	{
 		Material* mat = mesh_materials[mat_name];
 		if (mat == NULL)

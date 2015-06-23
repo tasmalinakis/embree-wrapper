@@ -1,5 +1,5 @@
 #pragma once
-#include "Primitive.h"
+#include "Triangle.h"
 #include <vector>
 #include <map>
 #include "Material.h"
@@ -16,12 +16,12 @@ namespace path_tracer
 		~Mesh();
 
 		// add a triangle to the mesh
-		Triangle*& addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2, const glm::vec3 color);
+		Triangle* addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2, const glm::vec3 color);
 
-		Triangle*& addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2);
+		Triangle* addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2);
 
 		// get a material given its name. If it exists return a pointer to the existing one. Otherwise create a new one.
-		Material*& getMaterial(const std::string mat_name);
+		Material* getMaterial(const std::string mat_name);
 
 		// get the vertices of every triangle in the order they were inserted as a float array
 		float* getVertexArray();
