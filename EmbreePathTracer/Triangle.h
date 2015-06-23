@@ -19,6 +19,7 @@ namespace path_tracer
 		Triangle(size_t prim_id, glm::vec3* v0, glm::vec3* v1, glm::vec3* v2, glm::vec3 color) : prim_id(prim_id), v0(v0), v1(v1), v2(v2), color(color)
 		{
 			// calculate normal here
+			normal = glm::normalize(glm::cross(*v1 - *v0, *v2 - *v1));
 		}
 
 		Triangle(size_t prim_id, glm::vec3 color) : prim_id(prim_id), color(color) {}

@@ -10,7 +10,7 @@ namespace path_tracer
 	public:
 		Light();
 
-		Light(Triangle* triangle);
+		Light(Triangle* triangle) : triangle(triangle) {};
 
 		~Light();
 
@@ -18,5 +18,6 @@ namespace path_tracer
 
 	private:
 		Triangle* triangle;
+		double pdf;
 	};
 }
