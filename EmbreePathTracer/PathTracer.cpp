@@ -129,6 +129,7 @@ namespace path_tracer
 
 	void PathTracer::commitScene()
 	{
+		scene->commitScene();
 		Mesh* cur_mesh;
 		isect_error_t err;
 		for (int i = 0; i < scene->meshes.size(); i++)

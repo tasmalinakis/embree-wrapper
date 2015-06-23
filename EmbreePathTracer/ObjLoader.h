@@ -3,10 +3,31 @@
 #include "Scene.h"
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include "Tools.h"
 
 namespace path_tracer
 {
-	// loads an OBJ file along with its mtl file, using tiny_obj_loader.
-	Scene* loadObj(Scene* scene, std::string input_file);
+	class ObjLoader
+	{
+	public:
+
+		// constructor
+		ObjLoader(Scene* scene, std::string obj_file, std::string lights_file) : scene(scene), obj_file(obj_file), lights_file(lights_file) {}
+
+		// loads an OBJ file along with its mtl file, using tiny_obj_loader.
+		void loadObj();
+
+		// clean up
+		void cleanUp() { scene_light_mats.clear(); }
+
+	private:
+		Scene* scene;
+		std::string obj_file;
+		std::string lights_file;
+
+		std::unordered_set<std::string> scene_light_mats;
+
+		void parseLightsFile();
+	};
 }

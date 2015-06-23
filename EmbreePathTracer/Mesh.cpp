@@ -24,7 +24,6 @@ namespace path_tracer
 		mesh.vertex_data.push_back(v2);
 
 		Triangle* tr = new Triangle(prim_id, color);
-		fix_needed = true;
 
 		mesh.prim_data.push_back(tr);
 		return tr;
@@ -35,17 +34,6 @@ namespace path_tracer
 		return addTriangle(v0, v1, v2, glm::vec3(0));
 	}
 
-	Material* Mesh::getMaterial(const std::string mat_name)
-	{
-		Material* mat = mesh_materials[mat_name];
-		if (mat == NULL)
-		{
-			mat = new Material(mesh_materials.size() - 1, mat_name);
-			mesh_materials[mat_name] = mat;
-		}
-		return mat;
-	}
-
 	float* Mesh::getVertexArray()
 	{
 		return &mesh.vertex_data[0][0];
@@ -53,7 +41,6 @@ namespace path_tracer
 
 	void** Mesh::getPrimData()
 	{
-		if (fix_needed == true) _fixReferences();
 		void** p = reinterpret_cast<void**> (mesh.prim_data.data());
 		return p;
 		
@@ -81,7 +68,7 @@ namespace path_tracer
 			mesh.prim_data[i]->v0 = (mesh.vertex_data.data() + index++);
 			mesh.prim_data[i]->v1 = (mesh.vertex_data.data() + index++);
 			mesh.prim_data[i]->v2 = (mesh.vertex_data.data() + index++);
+			mesh.prim_data[i]->calcNormal();
 		}
-		fix_needed = false;
 	}
 }

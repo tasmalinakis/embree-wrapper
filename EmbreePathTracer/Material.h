@@ -21,6 +21,7 @@ namespace path_tracer
 		inline glm::vec3 getReflectivityDiffuse() { return brdf.Kd; }
 		inline glm::vec3 getReflectivitySpecular() { return brdf.Ks; }
 		inline glm::vec3 getTransmissionFilter() { return brdf.Kt; }
+		inline glm::vec3 getRadiance() { return radiance; }
 
 		// brdf setters
 		inline Material* setSpecularExponent(float Ns) { brdf.Ns = Ns; return this; }
@@ -29,6 +30,7 @@ namespace path_tracer
 		inline Material* setReflectivityDiffuse(glm::vec3 Kd) { brdf.Kd = Kd; return this; }
 		inline Material* setReflectivitySpecular(glm::vec3 Ks) { brdf.Ks = Ks; return this; }
 		inline Material* setTransmissionFilter(glm::vec3 Kt) { brdf.Kt = Kt; return this; }
+		inline void setRadiance(glm::vec3 radiance) { this->radiance = radiance; }
 
 		inline const std::string getName() { return mat_name; }
 
@@ -36,6 +38,8 @@ namespace path_tracer
 		
 		const size_t mat_id;
 		const std::string mat_name;
+
+		glm::vec3 radiance;
 
 		// the brdf of the material
 		struct BRDF

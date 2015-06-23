@@ -20,9 +20,6 @@ namespace path_tracer
 
 		Triangle* addTriangle(const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2);
 
-		// get a material given its name. If it exists return a pointer to the existing one. Otherwise create a new one.
-		Material* getMaterial(const std::string mat_name);
-
 		// get the vertices of every triangle in the order they were inserted as a float array
 		float* getVertexArray();
 
@@ -58,12 +55,6 @@ namespace path_tracer
 			// pointer to Triangle structure for every triangle in this mesh
 			std::vector<Triangle*> prim_data;
 		} mesh;
-		
-		// map saving the encountered materials by their name
-		std::map<std::string, Material*> mesh_materials;
-
-		// set to true if an insertion has been made and the vertex pointers got invalidated
-		bool fix_needed;
 
 		// fix the references in Triangle structs before returning prim_data array
 		void _fixReferences();
