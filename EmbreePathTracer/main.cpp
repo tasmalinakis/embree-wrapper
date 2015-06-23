@@ -2,7 +2,6 @@
 #include <cstdio>
 #include "Window.h"
 #include "PathTracer.h"
-#include "Mesh.h"
 #include "Scene.h"
 #include "ObjLoader.h"
 using namespace intersector;
