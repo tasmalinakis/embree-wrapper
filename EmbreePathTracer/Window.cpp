@@ -62,7 +62,6 @@ namespace path_tracer
 			cur_vec->x = 0.0; cur_vec->y = 0.0; cur_vec->z = 0.0;
 			cur_vec++;
 		}
-		cur_samples = 0;
 	}
 
 	void Window::startRender()
@@ -104,15 +103,14 @@ namespace path_tracer
 
 	void Window::renderFrame()
 	{
-		pt->render(img_buffer);
-		cur_samples++;
+		pt->renderDirect(img_buffer);
 		SDL_LockSurface(screen_surface);
 		glm::dvec3 *cur_color = &img_buffer[0];
 		for (int y = 0; y < screen_height; y++)
 		{
 			for (int x = 0; x < screen_width; x++)
 			{
-				Uint32 color = SDL_MapRGB(screen_surface->format, cur_color->x / cur_samples, cur_color->y / cur_samples, cur_color->z / cur_samples);
+				Uint32 color = SDL_MapRGB(screen_surface->format, cur_color->x, cur_color->y, cur_color->z);
 				Uint8* cur_pixel = (Uint8*)screen_surface->pixels + y * screen_surface->pitch + x * screen_surface->format->BytesPerPixel;
 				*(Uint32*)cur_pixel = color;
 				cur_color++;

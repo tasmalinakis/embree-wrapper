@@ -14,7 +14,7 @@ namespace path_tracer
 		class Material* material;
 
 		void setMaterial(Material* material) { this->material = material; }
-		Material* getMaterial() { return material; }
+		Material*& getMaterial() { return material; }
 
 		Triangle(size_t prim_id, glm::vec3* v0, glm::vec3* v1, glm::vec3* v2, glm::vec3 color) : prim_id(prim_id), v0(v0), v1(v1), v2(v2), color(color) {}
 

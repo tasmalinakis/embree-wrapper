@@ -317,12 +317,20 @@ namespace intersector
 				size_t offset3 = 3 * i; // compute once
 				_traceSingleRay(*scene, scene->rays[i], origin_data + offset3, point_at_data + offset3, &intersection_data[offset3],
 					hit_primitive_ptr[i], r_type, max_range, trace_error);
-					if (hit_primitive_ptr + i != NULL) collisions++;
 				//fprintf(stderr, "%s\n", trace_error);
 			}
 		});
 
-		fprintf(stderr, "Collisions: %d\n", collisions);
+		for (size_t i = 0; i < num_rays; i++)
+		{
+			if (hit_primitive_ptr[i] != NULL && r_type == intersector::RAY_TYPE_NORMAL) collisions++;
+			else if (hit_primitive_ptr[i] == NULL && r_type == intersector::RAY_TYPE_SHADOW) collisions++;
+		}
+
+		if (r_type == RAY_TYPE_NORMAL)
+			fprintf(stderr, "Collisions: %d\n", collisions);
+		else if (r_type == RAY_TYPE_SHADOW)
+			fprintf(stderr, "No Collisions: %d out of %d\n", collisions, num_rays);
 		return ERROR_NONE;
 	}
 
@@ -383,16 +391,21 @@ namespace intersector
 		{
 
 			// create origin vector to calculate direction
-			Vec3fa v_org = makeVec3fa(ray.org[0], ray.org[1], ray.org[2]);
+			glm::dvec3 g_org = glm::dvec3(origin_data[0], origin_data[1], origin_data[2]);
+			Vec3fa v_org = makeVec3fa(origin_data[0], origin_data[1], origin_data[2]);
 
 			// create destination vector to calculate direction
+			glm::dvec3 g_dest = glm::dvec3(point_at_data[0], point_at_data[1], point_at_data[2]);
 			Vec3fa v_dest = makeVec3fa(point_at_data[0], point_at_data[1], point_at_data[2]);
 
 			// calculate direction vector
+			glm::dvec3 g_dir = glm::normalize(g_dest - g_org);
 			Vec3fa v_dir = normalize(v_dest - v_org);
 
 			// set the length of the shadow ray
-			ray.tfar = length(v_dest - v_org);
+			float v_length = length(v_dest - v_org);
+			float g_length = glm::length(g_dest - g_org);
+			ray.tfar = length(v_dest - v_org) - 0.0001f;
 
 			// set the direction
 			ray.dir[0] = v_dir.x;
@@ -400,15 +413,22 @@ namespace intersector
 			ray.dir[2] = v_dir.z;
 
 			// set the geomid to an arbitrary value
-			ray.geomID = 1;
+			ray.geomID = RTC_INVALID_GEOMETRY_ID;
 
 			// occlude with scene
 			rtcOccluded(scene.rtc_scene, ray);
 
-			// if an occlusion occurs set hit_primitive_ptr to null
+			// if no occlusion occurs set hit_primitive_ptr to null
 			if (ray.geomID == RTC_INVALID_GEOMETRY_ID)
 			{
+				// flags to point occlusion
 				hit_primitive_ptr = NULL;
+				*intersection_data = 1.0;
+			}
+			else
+			{
+				hit_primitive_ptr = (void*)1;
+				*intersection_data = 0.0;
 			}
 		}
 		

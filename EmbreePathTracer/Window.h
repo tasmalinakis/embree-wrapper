@@ -37,7 +37,6 @@ namespace path_tracer
 		SDL_Window* sdl_win;
 		SDL_Surface* screen_surface;
 		glm::dvec3* img_buffer;
-		size_t cur_samples;
 		bool quit;
 
 		// methods

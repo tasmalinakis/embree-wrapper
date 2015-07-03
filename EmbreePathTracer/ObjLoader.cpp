@@ -56,16 +56,16 @@ namespace path_tracer
 					tr_pos[tr].z = base[2];
 				}
 
-				Triangle* tr = mesh->addTriangle(tr_pos[0], tr_pos[1], tr_pos[2]);
+				Triangle* triangle = mesh->addTriangle(tr_pos[0], tr_pos[1], tr_pos[2]);
 
 				int mat_id = cur_shape.mesh.material_ids[(j - 1) / 3];
 				std::string mat_name = materials[mat_id].name;
-				tr->setMaterial(scene->getMaterial(mat_name));
+				triangle->setMaterial(scene->getMaterial(mat_name));
 
 				// check if the material is light material
 				if (scene_light_mats.count(mat_name) != 0)
 				{
-					scene->createLight(tr, scene->getMaterial(mat_name));
+					scene->createLight(triangle, triangle->getMaterial());
 				}
 			}
 		}

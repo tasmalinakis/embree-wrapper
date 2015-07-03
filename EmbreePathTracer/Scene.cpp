@@ -28,14 +28,14 @@ namespace path_tracer
 		return mesh;
 	}
 
-	Light* Scene::createLight(Triangle* tr, Material* material)
+	Light* Scene::createLight(Triangle*& tr, Material*& material)
 	{
 		Light* light = new Light(tr, material);
 		lights.push_back(light);
 		return light;
 	}
 
-	Material* Scene::getMaterial(const std::string mat_name)
+	Material*& Scene::getMaterial(const std::string mat_name)
 	{
 		Material* mat = mesh_materials[mat_name];
 		if (mat == NULL)

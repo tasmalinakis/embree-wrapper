@@ -20,6 +20,7 @@ namespace path_tracer
 		float b = (1 - rand2) * rand1;
 		float c = rand2 * rand1;
 
+		assert(abs(a + b + c - 1.0) < 0.0001);
 		// return random point inside triangle
 		return a * (*triangle->v0) + b * (*triangle->v1) + c * (*triangle->v2);
 	}

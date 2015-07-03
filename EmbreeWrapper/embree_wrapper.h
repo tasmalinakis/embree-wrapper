@@ -3,6 +3,7 @@
 #include <embree2\rtcore_ray.h>
 #include <iostream>
 #include <vector>
+#include <glm\glm.hpp>
 #include "intersector_commons.h"
 
 namespace intersector

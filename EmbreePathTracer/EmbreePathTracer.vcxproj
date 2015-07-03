@@ -168,6 +168,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="PathTracer.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Tools.h" />

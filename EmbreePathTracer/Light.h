@@ -22,7 +22,7 @@ namespace path_tracer
 		glm::vec3 samplePoint();
 
 	private:
-		Light(Triangle* triangle, Material* material) : triangle(triangle), material(material) {};
+		Light(Triangle*& triangle, Material*& material) : triangle(triangle), material(material) {};
 		Triangle* triangle;
 		double triangle_area; // pdf = 1 / area
 		Material* material;

@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Ray.h"
 
 using namespace intersector;
 
@@ -13,10 +14,13 @@ namespace path_tracer
 	{
 	public:
 		// factory method to create a path tracer
-		static PathTracer* createPathTracer(const unsigned int scr_width, const unsigned int scr_height);
+		static PathTracer* createPathTracer(const unsigned int scr_width, const unsigned int scr_height, const unsigned int samples_per_pixel = 1);
 
 		// render a single frame
 		void render(glm::dvec3 *&img_buffer);
+
+		// direct render
+		void renderDirect(glm::dvec3 *&img_buffer);
 
 		// get the scene this Path Tracer is rendering
 		inline Scene* getScene() { return scene; }
@@ -35,14 +39,32 @@ namespace path_tracer
 
 	private:
 		// private constructor
-		PathTracer(const int isect_id, const unsigned int scr_width, const unsigned int scr_height) : isect_id(isect_id), scr_width(scr_width), scr_height(scr_height) { init(); }
+		PathTracer(const int isect_id, const unsigned int scr_width, const unsigned int scr_height, const unsigned int samples_per_pixel) : 
+			isect_id(isect_id), scr_width(scr_width), scr_height(scr_height), samples_per_pixel(samples_per_pixel), num_rays(scr_height * scr_width * samples_per_pixel) { init(); }
 
 		// member variables
 		const int isect_id;
 		const unsigned int scr_width;
 		const unsigned int scr_height;
+		const unsigned int samples_per_pixel;
+		const unsigned int num_rays;
+		unsigned int active_rays;
+		unsigned int shadow_rays_num;
+		
+		// internal cumulative image buffer
+		glm::dvec3* img_buffer_cumulative;
+
+		// internal per frame image buffer
+		glm::dvec3* img_buffer_frame;
+
+		// number of cumulative iterations for an unchanged scene
+		size_t iterations;
+
 		Scene* scene;
 		Camera* camera;
+
+		Ray* normal_rays;
+		Ray* shadow_rays;
 
 		// holds the information for the rays being cast
 		struct RayInfo
@@ -65,5 +87,25 @@ namespace path_tracer
 
 		// initialize arrays
 		void init();
+
+		// pack the active rays to contiguous array
+		void packRays();
+
+		// initialize the values before the first intersection
+		void setupCameraRays();
+
+		// called after the first intersection to assign the
+		// materials each ray will shade
+		void assignShadingMats();
+
+		// initialize the values of shadow rays
+		// return the number of shadow rays that will be casted
+		void setupShadowRays();
+
+		// 
+		void shade();
+
+		// called at the end of the render procedure to update the window buffer
+		void updateWindowBuffer(glm::dvec3*& window_buffer);
 	};
 }
