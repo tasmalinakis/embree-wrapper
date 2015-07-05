@@ -177,7 +177,7 @@ namespace path_tracer
 	void PathTracer::russianRoullete(int depth)
 	{
 
-		if (depth < 3)
+		if (depth < 4)
 		{
 			for (unsigned int i = 0; i < active_rays; i++)
 			{
@@ -228,54 +228,69 @@ namespace path_tracer
 
 			// multiply pdf by selected event pdf
 			// FIX
-			ray->pdf_inversed *= 1.0;
 
-			// cosine sampling
-			// set ray strength to PI * brdf = PI * brdf.diffusion / PI = brdf.diffusion
-			Triangle* tr = Mesh::getTriangleFromVoidPtr(*ray->hit_primitive_ptr);
-			ray->ray_strength *= tr->getMaterial()->getReflectivityDiffuse();
+			Triangle* hit_triangle = Mesh::getTriangleFromVoidPtr(*ray->hit_primitive_ptr);
+			if (hit_triangle->getMaterial()->getReflectivitySpecular() == glm::dvec3(1.0, 1.0, 1.0))
+			{
+				// if the event is perfectly specular
+				ray->previous_direction_in = -ray->previous_direction_in;
+				glm::dvec3 new_direction = glm::reflect(-ray->previous_direction_in, hit_triangle->normal);
+				//ray->ray_strength *= hit_triangle->getMaterial()->getReflectivitySpecular();
+				ray->point_at_data[0] = new_direction.x;
+				ray->point_at_data[1] = new_direction.y;
+				ray->point_at_data[2] = new_direction.z;
 
-			/* Adopted from Global Compendium (35) */
+				ray->marked = true;
+			}
+			else
+			{
+				ray->marked = false;
+				// cosine sampling
+				// set ray strength to PI * brdf = PI * brdf.diffusion / PI = brdf.diffusion
+				ray->ray_strength *= hit_triangle->getMaterial()->getReflectivityDiffuse();
 
-			float rand1 = randomNum();
-			float rand2 = randomNum();
-			/*
-			float x = glm::cos(2 * PI * rand1) * glm::sqrt(1 - rand2);
-			float y = glm::sin(2 * PI * rand1) * glm::sqrt(1 - rand2);
-			float z = glm::sqrt(rand2);
-			*/
+				/* Adopted from Global Compendium (35) */
 
-			float phi = float(2 * PI) * rand1;
-			float cosTheta = sqrt(rand2), sinTheta = sqrt(1.0f - rand2);
-			glm::vec3 cos_sample(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+				float rand1 = randomNum();
+				float rand2 = randomNum();
+				/*
+				float x = glm::cos(2 * PI * rand1) * glm::sqrt(1 - rand2);
+				float y = glm::sin(2 * PI * rand1) * glm::sqrt(1 - rand2);
+				float z = glm::sqrt(rand2);
+				*/
 
-			//glm::vec3 cos_sample(x, y, z);
+				float phi = float(2 * PI) * rand1;
+				float cosTheta = sqrt(rand2), sinTheta = sqrt(1.0f - rand2);
+				glm::vec3 cos_sample(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
 
-			/* Altered code from Embree Start */
+				//glm::vec3 cos_sample(x, y, z);
 
-			// make basis for coordinate change to normal
-			glm::vec3 dx0 = glm::cross(glm::vec3(1.0, 0.0, 0.0), tr->normal);
-			glm::vec3 dx1 = cross(glm::vec3(0.0, 1.0, 0.0), tr->normal);
-			glm::vec3 dx = glm::normalize(glm::dot(dx0, dx0) > dot(dx1, dx1) ? dx0 : dx1);
-			glm::vec3 dy = glm::normalize(glm::cross(tr->normal, dx));
+				/* Altered code from Embree Start */
 
-			glm::mat3 change_mat(dx, dy, tr->normal);
-			//change_mat = glm::transpose(change_mat);
-			
-			// make the coordinate change
-			cos_sample = glm::normalize(change_mat * cos_sample);
+				// make basis for coordinate change to normal
+				glm::vec3 dx0 = glm::cross(glm::vec3(1.0, 0.0, 0.0), hit_triangle->normal);
+				glm::vec3 dx1 = cross(glm::vec3(0.0, 1.0, 0.0), hit_triangle->normal);
+				glm::vec3 dx = glm::normalize(glm::dot(dx0, dx0) > dot(dx1, dx1) ? dx0 : dx1);
+				glm::vec3 dy = glm::normalize(glm::cross(hit_triangle->normal, dx));
 
-			/* - Altered code from Embree End */
+				glm::mat3 change_mat(dx, dy, hit_triangle->normal);
+				//change_mat = glm::transpose(change_mat);
 
-			// set the direction of the ray
-			//cos_sample = glm::normalize(cos_sample - new_origin);
-			ray->point_at_data[0] = cos_sample.x;
-			ray->point_at_data[1] = cos_sample.y;
-			ray->point_at_data[2] = cos_sample.z;
+				// make the coordinate change
+				cos_sample = glm::normalize(change_mat * cos_sample);
+
+				/* - Altered code from Embree End */
+
+				// set the direction of the ray
+				//cos_sample = glm::normalize(cos_sample - new_origin);
+				ray->point_at_data[0] = cos_sample.x;
+				ray->point_at_data[1] = cos_sample.y;
+				ray->point_at_data[2] = cos_sample.z;
+
+			}
 
 			// set previous direction
-			ray->previous_direction_in = -glm::dvec3(ray->point_at_data[0], ray->point_at_data[1], ray->point_at_data[2]);
-
+			ray->previous_direction_in = glm::dvec3(ray->point_at_data[0], ray->point_at_data[1], ray->point_at_data[2]);
 		}
 	}
 
@@ -296,6 +311,8 @@ namespace path_tracer
 		// prepare for first cast
 		for (int i = 0; i < num_rays; i++)
 		{
+			normal_rays[i].marked = false;
+
 			// set relationships between Ray struct and RayInfo struct
 			// origin data
 			normal_rays[i].origin_data = cur_origin_data;
@@ -347,7 +364,7 @@ namespace path_tracer
 				*cur_point_at_data = d.y; cur_point_at_data++;
 				*cur_point_at_data = d.z; cur_point_at_data++;
 
-				cur_ray->previous_direction_in = -d;
+				cur_ray->previous_direction_in = d;
 
 				cur_ray++;
 			}
@@ -366,7 +383,8 @@ namespace path_tracer
 
 			// check if the material is perfectly specular and don't spawn shadow ray in that case
 			Triangle* tr = Mesh::getTriangleFromVoidPtr(*normal_ray.hit_primitive_ptr);
-			if (tr->getMaterial()->getReflectivitySpecular() == glm::dvec3(1.0, 1.0, 1.0)) continue;
+			if (tr->getMaterial()->getReflectivitySpecular() == glm::dvec3(1.0, 1.0, 1.0)) 
+				continue;
 
 			Ray* shadow_ray = &shadow_rays[shadow_rays_num];
 
@@ -488,6 +506,7 @@ namespace path_tracer
 			}
 			else // if something was hit, swap the current with the last inactive ray in the tables. There is no need to conserve the data of the inactive ray.
 			{
+
 				// get the inactive ray in the last packed index
 				Ray* inactive_ray = &normal_rays[packed_index];
 
@@ -515,6 +534,8 @@ namespace path_tracer
 				inactive_ray->previous_direction_in = cur_ray.previous_direction_in;
 				inactive_ray->ray_strength = cur_ray.ray_strength;
 				inactive_ray->source_triangle = cur_ray.source_triangle;
+
+				inactive_ray->marked = cur_ray.marked;
 
 				// increment the packed index
 				packed_index++;

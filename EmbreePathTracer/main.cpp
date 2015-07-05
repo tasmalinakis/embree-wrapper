@@ -17,9 +17,7 @@ int main(int argc, char *argv[])
 	Window* win = Window::createWindow("oeo");
 	
 	win->setIntersector(pt);
-	
-	//scene->addMesh(meshA);
-	//scene->addMesh(meshB);
+
 	pt->commitScene();
 	win->startRender();
 	delete win;

@@ -10,6 +10,8 @@ namespace path_tracer
 		float* intersection_data;
 		void** hit_primitive_ptr;
 
+		bool marked;
+
 		// the pixel this ray is contributing color to
 		glm::dvec3* pixel_contributing;
 

@@ -35,7 +35,7 @@ namespace intersector
 
 	// the Vertex structure has to be an aligned structure of 16 bytes as per the embree documentation
 	// hence the use of Vec3fa instead of Vec3f. The 4th float value of the struct is arbitrary.
-	typedef struct Vec3fa Vertex;
+	typedef glm::vec4 Vertex;
 
 	// initializes the embree Ray Tracking Core
 	void _initEmbree();

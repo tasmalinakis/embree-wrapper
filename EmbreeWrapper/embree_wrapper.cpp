@@ -1,6 +1,6 @@
 #include "embree_wrapper.h"
 #include <tbb\parallel_for.h>
-#include "common.h"
+//#include "common.h"
 
 namespace intersector
 {
@@ -162,14 +162,29 @@ namespace intersector
 	// a[4] a[5] a[6]  a[7]
 	// a[8] a[9] a[10] a[11]
 	// dc   dc   dc    dc
+
+	inline glm::mat4 __parseTransformation(const float* world_transform)
+	{
+		glm::vec4 vx(world_transform[0], world_transform[4], world_transform[8], world_transform[12]);
+		glm::vec4 vy(world_transform[1], world_transform[5], world_transform[9], world_transform[13]);
+		glm::vec4 vz(world_transform[2], world_transform[6], world_transform[10], world_transform[14]);
+		glm::vec4 vw(world_transform[3], world_transform[7], world_transform[11], world_transform[15]);
+		glm::mat4 xfm_matrix(vx, vy, vz, vw);
+		return xfm_matrix;
+	}
+
+	/*
 	inline AffineSpace3f __parseTransformation(const float* world_transform)
 	{
 		Vec3f vx = makeVec3f(world_transform[0], world_transform[4], world_transform[8]);
 		Vec3f vy = makeVec3f(world_transform[1], world_transform[5], world_transform[9]);
 		Vec3f vz = makeVec3f(world_transform[2], world_transform[6], world_transform[10]);
 		Vec3f vw = makeVec3f(world_transform[3], world_transform[7], world_transform[11]);
+		glm::mat4 transformation_matrix(1.0);
+		
 		return makeAffineSpace3f(vx, vy, vz, vw);
 	}
+	*/
 
 	// add the given triangles to the scene with the iid
 	isect_error_t _addTriangles(const int iid, const float *vertex_data, void **prim_ptr,
@@ -194,8 +209,9 @@ namespace intersector
 		RTCScene scene = scenes_requested[iid].rtc_scene;
 
 		// get the transformation array if it exists
-		AffineSpace3f xfm;
-		if (world_transform != NULL) xfm = __parseTransformation(world_transform);
+		//AffineSpace3f xfm;
+		glm::mat4 xfm_matrix(0.0);
+		if (world_transform != NULL) xfm_matrix = __parseTransformation(world_transform);
 
 		// create mesh. 3 vertices and 3 edges for each triangle
 		unsigned int mesh_id = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, num_triangles, 3 * num_triangles);
@@ -217,11 +233,12 @@ namespace intersector
 			for (int j = 0; j < 3; j++)
 			{
 				// create each vertex
-				temp_vertex = makeVec3fa(*(vertex_data), *(vertex_data + 1), *(vertex_data + 2));
+				//temp_vertex = makeVec3fa(*(vertex_data), *(vertex_data + 1), *(vertex_data + 2));
+				temp_vertex = glm::vec4(*(vertex_data), *(vertex_data + 1), *(vertex_data + 2), 0.0);
 				vertex_data += 3;
 
 				// apply world transform if any
-				if (world_transform != NULL) temp_vertex = xfmPoint(xfm, temp_vertex);
+				if (world_transform != NULL) temp_vertex = temp_vertex * xfm_matrix;
 
 				// map the vertices
 				vertices[3 * i + j] = temp_vertex;
@@ -391,21 +408,21 @@ namespace intersector
 		{
 
 			// create origin vector to calculate direction
-			glm::dvec3 g_org = glm::dvec3(origin_data[0], origin_data[1], origin_data[2]);
-			Vec3fa v_org = makeVec3fa(origin_data[0], origin_data[1], origin_data[2]);
+			glm::dvec3 v_org = glm::dvec3(origin_data[0], origin_data[1], origin_data[2]);
+			//Vec3fa v_org = makeVec3fa(origin_data[0], origin_data[1], origin_data[2]);
 
 			// create destination vector to calculate direction
-			glm::dvec3 g_dest = glm::dvec3(point_at_data[0], point_at_data[1], point_at_data[2]);
-			Vec3fa v_dest = makeVec3fa(point_at_data[0], point_at_data[1], point_at_data[2]);
+			glm::dvec3 v_dest = glm::dvec3(point_at_data[0], point_at_data[1], point_at_data[2]);
+			//Vec3fa v_dest = makeVec3fa(point_at_data[0], point_at_data[1], point_at_data[2]);
 
 			// calculate direction vector
-			glm::dvec3 g_dir = glm::normalize(g_dest - g_org);
-			Vec3fa v_dir = normalize(v_dest - v_org);
+			glm::dvec3 v_dir = glm::normalize(v_dest - v_org);
+			//Vec3fa v_dir = normalize(v_dest - v_org);
 
 			// set the length of the shadow ray
-			float v_length = length(v_dest - v_org);
-			float g_length = glm::length(g_dest - g_org);
-			ray.tfar = length(v_dest - v_org) - 0.0001f;
+			//float v_length = glm::length(v_dest - v_org);
+			//float g_length = glm::length(g_dest - g_org);
+			ray.tfar = glm::length(v_dest - v_org) - 0.0001f;
 
 			// set the direction
 			ray.dir[0] = v_dir.x;
