@@ -9,7 +9,7 @@ namespace path_tracer
 		triangle_area = glm::length(glm::cross(*triangle->v1 - *triangle->v0, *triangle->v2 - *triangle->v0)) / 2.0;
 	}
 
-	glm::vec3 Light::samplePoint()
+	glm::dvec3 Light::samplePoint()
 	{
 		float rand1 = randomNum();
 		float rand2 = randomNum();

@@ -35,6 +35,7 @@ namespace path_tracer
 		}
 
 		Window * window = new Window(title, screen_width, screen_height, sdl_win);
+		window->quit = false;
 		window->init();
 		return window;
 	}
@@ -103,7 +104,7 @@ namespace path_tracer
 
 	void Window::renderFrame()
 	{
-		pt->renderDirect(img_buffer);
+		pt->renderGI(img_buffer);
 		SDL_LockSurface(screen_surface);
 		glm::dvec3 *cur_color = &img_buffer[0];
 		for (int y = 0; y < screen_height; y++)

@@ -14,12 +14,14 @@ namespace path_tracer
 
 		~Light() {};
 
-		glm::vec3 getRadiance() { return material->getRadiance(); }
+		glm::dvec3 getRadiance() { return material->getRadiance(); }
 
 		double getTriangleArea() { return triangle_area; }
 
+		Triangle* getTriangle() { return triangle; }
+
 		// get a point of this light.
-		glm::vec3 samplePoint();
+		glm::dvec3 samplePoint();
 
 	private:
 		Light(Triangle*& triangle, Material*& material) : triangle(triangle), material(material) {};

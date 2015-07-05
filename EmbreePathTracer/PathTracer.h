@@ -6,6 +6,8 @@
 #include "Material.h"
 #include "Ray.h"
 
+#define PI 3.14159265358979323846
+
 using namespace intersector;
 
 namespace path_tracer
@@ -21,6 +23,8 @@ namespace path_tracer
 
 		// direct render
 		void renderDirect(glm::dvec3 *&img_buffer);
+
+		void renderGI(glm::dvec3 *&img_buffer);
 
 		// get the scene this Path Tracer is rendering
 		inline Scene* getScene() { return scene; }
@@ -94,16 +98,21 @@ namespace path_tracer
 		// initialize the values before the first intersection
 		void setupCameraRays();
 
-		// called after the first intersection to assign the
-		// materials each ray will shade
-		void assignShadingMats();
+		void gatherEmittance();
 
 		// initialize the values of shadow rays
 		// return the number of shadow rays that will be casted
 		void setupShadowRays();
 
+		void russianRoullete(int depth);
+
+		void setupSecondaryRays();
+
 		// 
 		void shade();
+
+		// tone map by dividing with max luma
+		void toneMap();
 
 		// called at the end of the render procedure to update the window buffer
 		void updateWindowBuffer(glm::dvec3*& window_buffer);

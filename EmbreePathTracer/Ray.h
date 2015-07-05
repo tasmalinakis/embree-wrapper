@@ -19,11 +19,15 @@ namespace path_tracer
 		// the current strength of the ray, used because of iterative implementation
 		glm::dvec3 ray_strength;
 
-		// the probability distribution function of this ray
-		double pdf;
+		// the probability distribution function of this ray. Inversed to avoid division
+		double pdf_inversed;
 
-		// the material this ray is shading
-		Material* mat_shaded;
+		// the triangle this ray was casted from
+		Triangle* source_triangle;
+
+		// used by shadow rays to save the target triangle
+		// since hit_primitive_ptr is not set in occlusion
+		Triangle* target_triangle;
 
 	} Ray;
 }

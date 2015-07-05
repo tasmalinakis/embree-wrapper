@@ -17,20 +17,20 @@ namespace path_tracer
 		// brdf getters
 		inline float getSpecularExponent() { return brdf.Ns; }
 		inline float getRefractionIndex() { return brdf.Ni; }
-		inline glm::vec3 getReflectivityAmbient() { return brdf.Ka; }
-		inline glm::vec3 getReflectivityDiffuse() { return brdf.Kd; }
-		inline glm::vec3 getReflectivitySpecular() { return brdf.Ks; }
-		inline glm::vec3 getTransmissionFilter() { return brdf.Kt; }
-		inline glm::vec3 getRadiance() { return radiance; }
+		inline glm::dvec3 getReflectivityAmbient() { return brdf.Ka; }
+		inline glm::dvec3 getReflectivityDiffuse() { return brdf.Kd; }
+		inline glm::dvec3 getReflectivitySpecular() { return brdf.Ks; }
+		inline glm::dvec3 getTransmissionFilter() { return brdf.Kt; }
+		inline glm::dvec3 getRadiance() { return radiance; }
 
 		// brdf setters
-		inline Material* setSpecularExponent(float Ns) { brdf.Ns = Ns; return this; }
-		inline Material* setRefractionIndex(float Ni) { brdf.Ni = Ni; return this; }
-		inline Material* setReflectivityAmbient(glm::vec3 Ka) { brdf.Ka = Ka; return this; }
-		inline Material* setReflectivityDiffuse(glm::vec3 Kd) { brdf.Kd = Kd; return this; }
-		inline Material* setReflectivitySpecular(glm::vec3 Ks) { brdf.Ks = Ks; return this; }
-		inline Material* setTransmissionFilter(glm::vec3 Kt) { brdf.Kt = Kt; return this; }
-		inline void setRadiance(glm::vec3 radiance) { this->radiance = radiance; }
+		inline void setSpecularExponent(float Ns) { brdf.Ns = Ns; }
+		inline void setRefractionIndex(float Ni) { brdf.Ni = Ni; }
+		inline void setReflectivityAmbient(glm::dvec3 Ka) { brdf.Ka = Ka; }
+		inline void setReflectivityDiffuse(glm::dvec3 Kd) { brdf.Kd = Kd; }
+		inline void setReflectivitySpecular(glm::dvec3 Ks) { brdf.Ks = Ks; }
+		inline void setTransmissionFilter(glm::dvec3 Kt) { brdf.Kt = Kt; }
+		inline void setRadiance(glm::dvec3 radiance) { this->radiance = radiance; }
 
 		inline const std::string getName() { return mat_name; }
 
@@ -39,17 +39,17 @@ namespace path_tracer
 		const size_t mat_id;
 		const std::string mat_name;
 
-		glm::vec3 radiance;
+		glm::dvec3 radiance;
 
 		// the brdf of the material
 		struct BRDF
 		{
 			float Ns;               /*< specular exponent */
 			float Ni;               /*< optical density for the surface (index of refraction) */
-			glm::vec3 Ka;              /*< ambient reflectivity */
-			glm::vec3 Kd;              /*< diffuse reflectivity */
-			glm::vec3 Ks;              /*< specular reflectivity */
-			glm::vec3 Kt;              /*< transmission filter */
+			glm::dvec3 Ka;              /*< ambient reflectivity */
+			glm::dvec3 Kd;              /*< diffuse reflectivity */
+			glm::dvec3 Ks;              /*< specular reflectivity */
+			glm::dvec3 Kt;              /*< transmission filter */
 		} brdf;
 	};
 }
