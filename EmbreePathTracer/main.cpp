@@ -9,12 +9,12 @@ using namespace path_tracer;
 
 int main(int argc, char *argv[])
 {
-	PathTracer* pt = PathTracer::createPathTracer(640, 480);
+	PathTracer* pt = PathTracer::createPathTracer(512, 512);
 	Scene* scene = pt->getScene();
 	ObjLoader obj_loader(scene, "cornell_box.obj", "cornell_box.lgts");
 	obj_loader.loadObj();
 	obj_loader.cleanUp();
-	Window* win = Window::createWindow("oeo");
+	Window* win = Window::createWindow("oeo", 512, 512);
 	
 	win->setIntersector(pt);
 

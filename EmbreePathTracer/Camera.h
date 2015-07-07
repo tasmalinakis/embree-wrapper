@@ -6,7 +6,7 @@ namespace path_tracer
 	class Camera
 	{
 	public:
-		Camera(int width, int height, glm::vec3 pos, glm::vec3 point_to) : aspect_ratio((float)width / height), pos(pos), point_to(point_to) { init(); }
+		Camera(int width, int height, glm::vec3 pos, glm::vec3 point_to) : aspect_ratio((float)width / (float)height), pos(pos), point_to(point_to) { init(); }
 
 		// const getters
 		inline const glm::vec3& getUp() const { return up; }

@@ -35,8 +35,5 @@
     <ClInclude Include="intersector_commons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

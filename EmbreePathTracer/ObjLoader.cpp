@@ -16,8 +16,7 @@ namespace path_tracer
 		printf("# of shapes: %d\n", shapes.size());
 		printf("# of materials: %d\n", materials.size());
 
-		// create a new mesh
-		Mesh* mesh = scene->createMesh(NULL);
+
 
 		// save the materials of the mesh
 		for (size_t i = 0; i < materials.size(); i++)
@@ -42,6 +41,8 @@ namespace path_tracer
 		for (size_t i = 0; i < shapes.size(); i++)
 		{
 			tinyobj::shape_t cur_shape = shapes[i];
+			// create a new mesh
+			Mesh* mesh = scene->createMesh(NULL);
 			// iterate through triangles of each shape
 			for (size_t j = 0; j < cur_shape.mesh.indices.size();)
 			{

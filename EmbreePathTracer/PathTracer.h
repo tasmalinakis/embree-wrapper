@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Ray.h"
+#include <chrono>
 
 #define PI 3.14159265358979323846
 
@@ -38,9 +39,6 @@ namespace path_tracer
 		// destructor
 		~PathTracer();
 
-		// debug
-		void renderTest(glm::dvec3 *&img_buffer);
-
 	private:
 		// private constructor
 		PathTracer(const int isect_id, const unsigned int scr_width, const unsigned int scr_height, const unsigned int samples_per_pixel) : 
@@ -69,6 +67,8 @@ namespace path_tracer
 
 		Ray* normal_rays;
 		Ray* shadow_rays;
+
+		double elapsed_time;
 
 		// holds the information for the rays being cast
 		struct RayInfo

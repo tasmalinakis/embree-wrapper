@@ -32,6 +32,8 @@ namespace path_tracer
 
 		img_buffer_cumulative = new glm::dvec3[scr_width * scr_height];
 		img_buffer_frame = new glm::dvec3[scr_width * scr_height];
+
+		elapsed_time = 0.0;
 	}
 
 	PathTracer::~PathTracer()
@@ -55,62 +57,18 @@ namespace path_tracer
 		return new PathTracer(id, scr_width, scr_height, samples_per_pixel);
 	}
 
-	void PathTracer::renderTest(glm::dvec3*& img_buffer)
-	{
-		//intersector::isectTraceRays(isect_id, normal_ray_info.origin_data, normal_ray_info.point_at_data, normal_ray_info.intersection_data, normal_ray_info.hit_primitive_ptr, scr_height * scr_width, intersector::RAY_TYPE_NORMAL);
-		glm::dvec3* cur_pixel = &img_buffer[0];
-		int counter = 0;
-		for (int y = 0; y < scr_height; y++)
-		{
-			for (int x = 0; x < scr_width; x++)
-			{
-				if (counter == 30) counter = 0;
-				int r = 0; int g = 0; int b = 0;
-				if (counter <= 10) r = 255;
-				else if (counter <= 20) g = 255;
-				else if (counter <= 30) b = 255;
-				*cur_pixel = glm::vec3(r, g, b);
-				cur_pixel++;
-			}
-			counter++;
-		}
-	}
-
 	void PathTracer::render(glm::dvec3 *&img_buffer)
 	{
-
-		glm::vec3 cx = camera->getCx();
-		glm::vec3 cy = camera->getCy();
-		glm::vec3 cam_pos = camera->getPos();
-		glm::vec3 cam_dir = camera->getDirection();
-
-		float sx = 0;
-		float sy = 0;
-		float* cur_origin_data = normal_ray_info->origin_data;
-		float* cur_point_at_data = normal_ray_info->point_at_data;
-
-		for (int col = 0; col < scr_height; col++)
-		{
-			for (int row = 0; row < scr_width; row++)
-			{
-
-				double r1 = 2 * randomNum(); double dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
-				double r2 = 2 * randomNum(), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
-
-				glm::vec3 d = cx* (float)(((sx + .5 + dx) / 2 + row) / scr_width - .5) + cy*(float)(((sy + .5 + dy) / 2 + col) / scr_height - .5) + cam_dir;
-				d = glm::normalize(d);
-
-				*cur_origin_data = cam_pos.x; cur_origin_data++;
-				*cur_origin_data = cam_pos.y; cur_origin_data++;
-				*cur_origin_data = cam_pos.z; cur_origin_data++;
-
-				*cur_point_at_data = d.x; cur_point_at_data++;
-				*cur_point_at_data = d.y; cur_point_at_data++;
-				*cur_point_at_data = d.z; cur_point_at_data++;
-			}
-		}
+		setupCameraRays();
 
 		intersector::isectTraceRays(isect_id, normal_ray_info->origin_data, normal_ray_info->point_at_data, normal_ray_info->intersection_data, normal_ray_info->hit_primitive_ptr, scr_height * scr_width, intersector::RAY_TYPE_NORMAL);
+
+		for (int i = 0; i < active_rays; i++)
+		{
+			if (*normal_rays[i].hit_primitive_ptr == NULL) continue;
+			Triangle* tr = Mesh::getTriangleFromVoidPtr(*normal_rays[i].hit_primitive_ptr);
+			*normal_rays[i].pixel_contributing += tr->getMaterial()->getReflectivityDiffuse();
+		}
 
 		updateWindowBuffer(img_buffer);
 	}
@@ -148,7 +106,11 @@ namespace path_tracer
 		while (active_rays > 0)
 		{
 			//intersect with scene
+			auto start = std::chrono::steady_clock().now();
 			intersector::isectTraceRays(isect_id, normal_ray_info->origin_data, normal_ray_info->point_at_data, normal_ray_info->intersection_data, normal_ray_info->hit_primitive_ptr, active_rays, intersector::RAY_TYPE_NORMAL);
+			auto end = std::chrono::steady_clock().now();			
+			auto duration = end - start;
+			elapsed_time += std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 
 			// make at least 5 iterations
 			
@@ -163,7 +125,11 @@ namespace path_tracer
 			// check for occlusions
 			if (shadow_rays_num > 0)
 			{
+				start = std::chrono::steady_clock().now();
 				intersector::isectTraceRays(isect_id, shadow_ray_info->origin_data, shadow_ray_info->point_at_data, shadow_ray_info->intersection_data, shadow_ray_info->hit_primitive_ptr, shadow_rays_num, intersector::RAY_TYPE_SHADOW);
+				end = std::chrono::steady_clock().now();
+				duration = end - start;
+				elapsed_time += std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 				shade();
 			}
 
@@ -171,13 +137,15 @@ namespace path_tracer
 
 			depth++;
 		}
+
+		
 		updateWindowBuffer(img_buffer);
 	}
 
 	void PathTracer::russianRoullete(int depth)
 	{
 
-		if (depth < 4)
+		if (depth < 10)
 		{
 			for (unsigned int i = 0; i < active_rays; i++)
 			{
@@ -218,7 +186,6 @@ namespace path_tracer
 			Ray* ray = &normal_rays[i];
 
 			// decide what event will occur
-			// diffusion for now
 
 			// set origin to current intersection
 			glm::vec3 new_origin = float3ToVec3(ray->intersection_data);
@@ -227,24 +194,20 @@ namespace path_tracer
 			ray->origin_data[2] = ray->intersection_data[2];
 
 			// multiply pdf by selected event pdf
-			// FIX
 
 			Triangle* hit_triangle = Mesh::getTriangleFromVoidPtr(*ray->hit_primitive_ptr);
 			if (hit_triangle->getMaterial()->getReflectivitySpecular() == glm::dvec3(1.0, 1.0, 1.0))
 			{
 				// if the event is perfectly specular
-				ray->previous_direction_in = -ray->previous_direction_in;
-				glm::dvec3 new_direction = glm::reflect(-ray->previous_direction_in, hit_triangle->normal);
+
+				glm::dvec3 new_direction = glm::reflect(ray->previous_direction_in, hit_triangle->normal);
 				//ray->ray_strength *= hit_triangle->getMaterial()->getReflectivitySpecular();
 				ray->point_at_data[0] = new_direction.x;
 				ray->point_at_data[1] = new_direction.y;
-				ray->point_at_data[2] = new_direction.z;
-
-				ray->marked = true;
+				ray->point_at_data[2] = new_direction.z;		
 			}
 			else
 			{
-				ray->marked = false;
 				// cosine sampling
 				// set ray strength to PI * brdf = PI * brdf.diffusion / PI = brdf.diffusion
 				ray->ray_strength *= hit_triangle->getMaterial()->getReflectivityDiffuse();

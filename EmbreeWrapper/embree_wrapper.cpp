@@ -156,8 +156,6 @@ namespace intersector
 	}
 
 	// used to parse the world transform in the add triangles function
-	// and return an AffineSpace3f
-	// we only care for the first 12 floats
 	// a[0] a[1] a[2]  a[3]
 	// a[4] a[5] a[6]  a[7]
 	// a[8] a[9] a[10] a[11]
@@ -172,19 +170,6 @@ namespace intersector
 		glm::mat4 xfm_matrix(vx, vy, vz, vw);
 		return xfm_matrix;
 	}
-
-	/*
-	inline AffineSpace3f __parseTransformation(const float* world_transform)
-	{
-		Vec3f vx = makeVec3f(world_transform[0], world_transform[4], world_transform[8]);
-		Vec3f vy = makeVec3f(world_transform[1], world_transform[5], world_transform[9]);
-		Vec3f vz = makeVec3f(world_transform[2], world_transform[6], world_transform[10]);
-		Vec3f vw = makeVec3f(world_transform[3], world_transform[7], world_transform[11]);
-		glm::mat4 transformation_matrix(1.0);
-		
-		return makeAffineSpace3f(vx, vy, vz, vw);
-	}
-	*/
 
 	// add the given triangles to the scene with the iid
 	isect_error_t _addTriangles(const int iid, const float *vertex_data, void **prim_ptr,
@@ -233,7 +218,6 @@ namespace intersector
 			for (int j = 0; j < 3; j++)
 			{
 				// create each vertex
-				//temp_vertex = makeVec3fa(*(vertex_data), *(vertex_data + 1), *(vertex_data + 2));
 				temp_vertex = glm::vec4(*(vertex_data), *(vertex_data + 1), *(vertex_data + 2), 0.0);
 				vertex_data += 3;
 
@@ -323,31 +307,18 @@ namespace intersector
 
 		// use tbb as suggested by Embree documentation
 		// set the parameters for each ray before calling the parallel subroutine
-		int collisions = 0;
 		tbb::parallel_for(tbb::blocked_range<size_t>(0, num_rays), [&](const tbb::blocked_range<size_t>& r)
 		{
 			for (size_t i = r.begin(); i != r.end(); ++i)
 			{
-
 				// set the parameters for each ray here
 				isect_error_t trace_error;
 				size_t offset3 = 3 * i; // compute once
 				_traceSingleRay(*scene, scene->rays[i], origin_data + offset3, point_at_data + offset3, &intersection_data[offset3],
 					hit_primitive_ptr[i], r_type, max_range, trace_error);
-				//fprintf(stderr, "%s\n", trace_error);
 			}
 		});
 
-		for (size_t i = 0; i < num_rays; i++)
-		{
-			if (hit_primitive_ptr[i] != NULL && r_type == intersector::RAY_TYPE_NORMAL) collisions++;
-			else if (hit_primitive_ptr[i] == NULL && r_type == intersector::RAY_TYPE_SHADOW) collisions++;
-		}
-
-		if (r_type == RAY_TYPE_NORMAL)
-			fprintf(stderr, "Collisions: %d\n", collisions);
-		else if (r_type == RAY_TYPE_SHADOW)
-			fprintf(stderr, "No Collisions: %d out of %d\n", collisions, num_rays);
 		return ERROR_NONE;
 	}
 
@@ -409,19 +380,14 @@ namespace intersector
 
 			// create origin vector to calculate direction
 			glm::dvec3 v_org = glm::dvec3(origin_data[0], origin_data[1], origin_data[2]);
-			//Vec3fa v_org = makeVec3fa(origin_data[0], origin_data[1], origin_data[2]);
 
 			// create destination vector to calculate direction
 			glm::dvec3 v_dest = glm::dvec3(point_at_data[0], point_at_data[1], point_at_data[2]);
-			//Vec3fa v_dest = makeVec3fa(point_at_data[0], point_at_data[1], point_at_data[2]);
 
 			// calculate direction vector
 			glm::dvec3 v_dir = glm::normalize(v_dest - v_org);
-			//Vec3fa v_dir = normalize(v_dest - v_org);
 
 			// set the length of the shadow ray
-			//float v_length = glm::length(v_dest - v_org);
-			//float g_length = glm::length(g_dest - g_org);
 			ray.tfar = glm::length(v_dest - v_org) - 0.0001f;
 
 			// set the direction
@@ -438,14 +404,15 @@ namespace intersector
 			// if no occlusion occurs set hit_primitive_ptr to null
 			if (ray.geomID == RTC_INVALID_GEOMETRY_ID)
 			{
-				// flags to point occlusion
+				// flags to point NO occlusion
 				hit_primitive_ptr = NULL;
-				*intersection_data = 1.0;
+				*intersection_data = 0.0;
 			}
 			else
 			{
+				// flags to point YES occlusion
 				hit_primitive_ptr = (void*)1;
-				*intersection_data = 0.0;
+				*intersection_data = 1.0;
 			}
 		}
 		
